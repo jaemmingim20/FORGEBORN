@@ -135,7 +135,13 @@ export class GameManager {
       },
     });
     this.scene.scene.add(this.scene.camera);
-    this.miningView = new MiningView(this.mining, physics, this.scene.camera, this.events);
+    this.miningView = new MiningView(
+      this.mining,
+      physics,
+      this.scene.camera,
+      this.events,
+      this.world.materials,
+    );
     this.scene.scene.add(this.miningView.root);
     this.miningUI = new MiningUI(container, this.inventory, this.mining, this.events, () =>
       this.toggleInventory(),

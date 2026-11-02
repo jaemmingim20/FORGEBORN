@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export class SceneRenderer {
   readonly scene = new THREE.Scene();
@@ -8,6 +9,7 @@ export class SceneRenderer {
   private readonly ambient = new THREE.HemisphereLight('#c4e0e6', '#746448', 2.1);
   private readonly sunlight = new THREE.DirectionalLight('#ffdb9c', 3.1);
   private readonly resizeObserver: ResizeObserver;
+  private readonly environment: THREE.WebGLRenderTarget;
 
   constructor(readonly container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -16,13 +18,20 @@ export class SceneRenderer {
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     // The Phase 1 world is static; do not redraw its shadow map every frame.
     this.renderer.shadowMap.autoUpdate = false;
     this.renderer.shadowMap.needsUpdate = true;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.25;
+    this.renderer.toneMappingExposure = 1.12;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    const room = new RoomEnvironment();
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.environment = pmrem.fromScene(room, 0.04, 0.1, 100, { size: 128 });
+    this.scene.environment = this.environment.texture;
+    this.scene.environmentIntensity = 0.4;
+    room.dispose();
+    pmrem.dispose();
     this.renderer.domElement.id = 'game-canvas';
     this.renderer.domElement.setAttribute('aria-label', 'FORGEBORN 1인칭 3D 월드');
     this.container.append(this.renderer.domElement);
@@ -53,6 +62,7 @@ export class SceneRenderer {
     sun.shadow.camera.far = 120;
     sun.shadow.bias = -0.0004;
     sun.shadow.normalBias = 0.045;
+    sun.shadow.radius = 2;
     sun.target.position.set(0, 0, -8);
     this.scene.add(sun, sun.target);
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -72,6 +82,7 @@ export class SceneRenderer {
     const t = Math.min(1, depth / 12);
     this.ambient.intensity = 2.1 * (1 - t) + 0.7 * t;
     this.sunlight.intensity = 3.1 * (1 - t);
+    this.scene.environmentIntensity = 0.4 * (1 - t) + 0.15 * t;
     const fog = this.scene.fog as THREE.Fog;
     fog.color.set('#a1aea0').lerp(new THREE.Color('#111c1e'), t);
     fog.near = 38 * (1 - t) + 6 * t;
@@ -86,6 +97,7 @@ export class SceneRenderer {
     this.resizeObserver.disconnect();
     this.sky.geometry.dispose();
     (this.sky.material as THREE.Material).dispose();
+    this.environment.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }

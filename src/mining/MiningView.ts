@@ -4,7 +4,11 @@ import { EventBus } from '../core/EventBus';
 import { PhysicsWorld } from '../physics/PhysicsWorld';
 import { MiningManager } from './MiningManager';
 import { ORES } from './data';
-import { box, mesh, cylinder } from '../world/primitives';
+import { mesh, batchStatic } from '../world/primitives';
+import { buildPickaxeModel } from '../world/PickaxeModel';
+import type { Materials } from '../render/materials';
+import { seededRandom } from '../world/data';
+import { cellAt, cellPosition } from '../world/mineLayout';
 
 export class MiningView {
   readonly root = new THREE.Group();
@@ -24,41 +28,64 @@ export class MiningView {
     private readonly physics: PhysicsWorld,
     private readonly camera: THREE.PerspectiveCamera,
     private readonly events: EventBus,
+    worldMaterials: Materials,
   ) {
-    const rock = new THREE.MeshStandardMaterial({
-      color: '#414c4c',
-      roughness: 1,
-      flatShading: true,
-    });
-    const wood = new THREE.MeshStandardMaterial({ color: '#866546', roughness: 0.9 });
     const iron = new THREE.MeshStandardMaterial({
-      color: '#82918f',
+      color: '#9ca6a2',
       metalness: 0.7,
-      roughness: 0.48,
+      roughness: 0.65,
     });
-    this.materials.push(rock, wood, iron);
+    this.materials.push(iron);
+    const oreMaterials = new Map(
+      Object.entries(ORES).map(([id, ore]) => {
+        const material = new THREE.MeshStandardMaterial({
+          color: ore.color,
+          map: worldMaterials.rock.map,
+          normalMap: worldMaterials.rock.normalMap,
+          roughnessMap: worldMaterials.rock.roughnessMap,
+          metalness: id === 'coal' ? 0.05 : 0.7,
+          roughness: id === 'coal' ? 0.94 : 0.55,
+          emissive: ore.color,
+          emissiveIntensity: id === 'mithril' ? 0.07 : 0.015,
+        });
+        this.materials.push(material);
+        return [id, material] as const;
+      }),
+    );
     for (const vein of manager.veins.values()) {
       const group = new THREE.Group();
-      group.position.copy(vein.position);
-      const base = mesh(group, new THREE.DodecahedronGeometry(0.64, 0), rock);
-      base.scale.set(0.9, 0.8, 1.2);
-      const mineral = new THREE.MeshStandardMaterial({
-        color: ORES[vein.ore].color,
-        metalness: vein.ore === 'coal' ? 0 : 0.5,
-        roughness: 0.4,
-        emissive: ORES[vein.ore].color,
-        emissiveIntensity: 0.13,
-      });
-      this.materials.push(mineral);
-      for (let i = 0; i < 6; i++) {
-        const crystal = mesh(group, new THREE.OctahedronGeometry(0.19 + (i % 3) * 0.04), mineral, [
-          Math.sin(i * 2.4) * 0.42,
-          Math.cos(i * 1.7) * 0.38,
-          Math.cos(i * 2.4) * 0.4,
-        ]);
-        crystal.scale.y = 1.45;
-        crystal.rotation.z = i;
+      const random = seededRandom(
+        vein.id.split('').reduce((n, c) => Math.imul(n, 31) + c.charCodeAt(0), 2166136261),
+      );
+      const base = mesh(group, new THREE.IcosahedronGeometry(0.58, 1), worldMaterials.rockDark);
+      base.scale.set(0.9, 0.8, 1.05);
+      // Root the mineral-bearing boulder into the floor/rock behind the visible seam.
+      const cell = cellAt(vein.position),
+        center = cell ? cellPosition(cell) : { x: 0, y: 0, z: vein.position.z };
+      const dx = vein.position.x - center.x,
+        dz = vein.position.z - center.z;
+      const nx = Math.abs(dx) >= Math.abs(dz) ? Math.sign(dx) : 0,
+        nz = nx ? 0 : Math.sign(dz);
+      const anchor = mesh(group, new THREE.IcosahedronGeometry(0.62, 1), worldMaterials.rockDark, [
+        nx * 0.3,
+        -0.45,
+        nz * 0.3,
+      ]);
+      anchor.scale.set(0.95, 1.05, 1.0);
+      for (let i = 0; i < 14; i++) {
+        const angle = random() * Math.PI * 2,
+          elevation = (random() - 0.5) * 2;
+        const patch = mesh(
+          group,
+          new THREE.DodecahedronGeometry(0.08 + random() * 0.1, 0),
+          oreMaterials.get(vein.ore)!,
+          [Math.cos(angle) * 0.41, elevation * 0.33, Math.sin(angle) * 0.45],
+        );
+        patch.scale.set(1.4, 0.45 + random() * 0.5, 0.7);
+        patch.rotation.set(random() * 3, angle, random());
       }
+      batchStatic(group);
+      group.position.copy(vein.position);
       this.root.add(group);
       const collider = physics.addBox({
         center: vein.position,
@@ -67,12 +94,7 @@ export class MiningView {
       });
       this.visuals.set(vein.id, { group, collider });
     }
-    cylinder(this.pickaxe, wood, 0.025, 0.035, 0.72, [0, 0, 0], 8);
-    box(this.pickaxe, iron, [0.5, 0.09, 0.09], [0, 0.3, 0]);
-    const left = mesh(this.pickaxe, new THREE.ConeGeometry(0.065, 0.22, 5), iron, [-0.31, 0.27, 0]);
-    left.rotation.z = Math.PI / 2 + 0.2;
-    const right = mesh(this.pickaxe, new THREE.ConeGeometry(0.065, 0.22, 5), iron, [0.31, 0.27, 0]);
-    right.rotation.z = -Math.PI / 2 - 0.2;
+    this.pickaxe.add(buildPickaxeModel(worldMaterials));
     this.pickaxe.traverse((object) => {
       if (object instanceof THREE.Mesh) object.castShadow = false;
     });

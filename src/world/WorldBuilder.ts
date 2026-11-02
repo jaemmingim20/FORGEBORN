@@ -1,3 +1,13 @@
+import {
+  addForgeDetail,
+  addChimneySmoke,
+  addTree,
+  addCottage,
+  addGrandEntrance,
+  weatheredRock,
+  roughEntranceBlock,
+} from './ExteriorDecor';
+import { canPlaceVegetation } from './vegetation';
 import { buildMine } from './MineBuilder';
 import * as THREE from 'three';
 import type { BoxColliderSpec } from '../core/types';
@@ -23,6 +33,8 @@ export class WorldBuilder {
   build(): THREE.Group {
     this.ground();
     this.building();
+    addForgeDetail(this.root, this.materials);
+    addChimneySmoke(this.root, [-6.3, 6.9, -0.2], 721);
     this.yard();
     this.mine();
     this.fixtures();
@@ -241,39 +253,41 @@ export class WorldBuilder {
   private mine(): void {
     const m = this.materials;
     // Keep the original entrance and connect it to the Phase 2 underground mine.
-    this.solid(m.rockDark, [1.7, 4.7, 11], [-3.7, 2.35, -37]);
-    this.solid(m.rockDark, [1.7, 4.7, 11], [3.7, 2.35, -37]);
-    this.solid(m.rockDark, [8.8, 1.8, 11], [0, 5.1, -37]);
+    for (const side of [-1, 1]) {
+      const wall = this.solid(m.rockDark, [1.7, 4.7, 11], [side * 3.7, 2.35, -37]);
+      wall.geometry.dispose();
+      wall.geometry = roughEntranceBlock([1.7, 4.7, 11], 120 + side);
+    }
+    const ceiling = this.solid(m.rockDark, [8.8, 1.8, 11], [0, 5.1, -37]);
+    ceiling.geometry.dispose();
+    ceiling.geometry = roughEntranceBlock([8.8, 1.8, 11], 125);
     box(this.root, m.earth, [6, 0.04, 16], [0, -0.005, -35]);
     for (const z of [-32, -36, -40]) {
       for (const x of [-2.7, 2.7]) this.solid(m.timber, [0.3, 3.8, 0.32], [x, 1.9, z]);
       this.solid(m.wood, [5.7, 0.35, 0.4], [0, 3.9, z]);
       for (const x of [-2.6, 2.6]) beam(this.root, m.wood, [x, 2.9, z], [x * 0.6, 3.8, z], 0.18);
     }
-    textSign(this.root, 'THE OLD MINE', 'BEYOND THE LAST LIGHT', [0, 4.5, -31.2], 4.8);
     for (const x of [-0.8, 0.8]) box(this.root, m.iron, [0.07, 0.04, 10], [x, 0.04, -36.5]);
     for (let z = -32; z >= -41; z -= 0.9)
       box(this.root, m.timber, [2.2, 0.035, 0.16], [0, 0.02, z]);
     this.torch(-2.5, 2.5, -31.7, true);
     this.torch(2.55, 2.2, -37, true);
-    const random = seededRandom(122);
-    for (let i = 0; i < 36; i++) {
-      const side = i % 2 ? -1 : 1;
-      const x = side * (4.5 + random() * 12);
-      const y = 1 + random() * 3;
-      const z = -34 - random() * 12;
-      const rock = mesh(
-        this.root,
-        new THREE.DodecahedronGeometry(1, 0),
-        i % 3 ? m.rock : m.rockDark,
-        [x, y, z],
-      );
-      rock.scale.set(2 + random() * 2, 3 + random() * 4, 2 + random() * 3);
-      rock.rotation.y = random() * Math.PI;
+    addGrandEntrance(this.root, m);
+    for (const side of [-1, 1]) {
       this.physics.addBox({
-        center: { x, y, z },
-        size: { x: rock.scale.x * 1.25, y: rock.scale.y * 1.5, z: rock.scale.z * 1.25 },
+        center: { x: side * 12.4, y: 7, z: -37 },
+        size: { x: 15, y: 22, z: 14 },
       });
+      // Rough natural outcrops cover the throat without intruding on the first ore or the capsule path.
+      for (let i = 0; i < 12; i++) {
+        const rock = mesh(
+          this.root,
+          weatheredRock(1200 + i + side * 10, 1),
+          i % 3 ? m.rockDark : m.rock,
+          [side * 3.38, 0.7 + (i % 3) * 1.3, -32.3 - Math.floor(i / 3) * 2.7],
+        );
+        rock.scale.set(0.45, 0.8, 1.25);
+      }
     }
     this.fence([-33.5, 0, -45.5], [-7, 0, -45.5]);
     this.fence([7, 0, -45.5], [33.5, 0, -45.5]);
@@ -327,72 +341,74 @@ export class WorldBuilder {
   private landscape(): void {
     const m = this.materials;
     const random = seededRandom(WORLD_SEED);
-    for (let i = 0; i < 95; i++) {
+    const cottages = [
+      [-47, 17, 1],
+      [47, 9, 1.1],
+      [-45, -15, 0.85],
+      [50, -26, 0.9],
+    ] as const;
+    for (let i = 0; i < 190; i++) {
       const angle = random() * Math.PI * 2;
-      const distance = 36 + random() * 45;
+      const distance = 37 + random() * 55;
       const x = Math.cos(angle) * distance;
       const z = Math.sin(angle) * distance - 8;
-      if (Math.abs(x) < 34 && z > -46 && z < 31) continue;
-      const height = 6 + random() * 8;
-      cylinder(this.root, m.timber, 0.18, 0.5, height * 0.7, [x, height * 0.35, z], 6);
-      if (i % 3) {
-        for (let j = 0; j < 3; j++) {
-          const canopy = mesh(
-            this.root,
-            new THREE.ConeGeometry(height * (0.26 - j * 0.04), height * 0.55, 7),
-            i % 2 ? m.needles : m.foliage,
-            [x, height * (0.42 + j * 0.18), z],
-          );
-          canopy.rotation.y = random() * Math.PI;
-        }
-      } else {
-        for (let j = 0; j < 3; j++) {
-          const canopy = mesh(
-            this.root,
-            new THREE.IcosahedronGeometry(height * 0.28, 1),
-            j % 2 ? m.foliageLight : m.foliage,
-            [x + (j - 1) * 1.3, height * 0.75 + (j % 2) * 1.6, z],
-          );
-          canopy.scale.y = 0.85;
-        }
+      const height = 7 + random() * 9;
+      // Reserve the complete canopy/root envelope, not only a trunk point.
+      const radius = height * 0.46;
+      if (Math.abs(x) < 34 + radius && z > -46 - radius && z < 31 + radius) continue;
+      if (!canPlaceVegetation(x, z, radius)) continue;
+      if (cottages.some(([cx, cz, scale]) => Math.hypot(x - cx, z - cz) < radius + 7 * scale))
+        continue;
+      addTree(this.root, m, x, z, height, 9000 + i);
+    }
+    for (const [x, z, scale] of cottages) {
+      if (canPlaceVegetation(x, z, 9 * scale)) {
+        addCottage(this.root, m, [x, 0, z], scale);
+        addChimneySmoke(this.root, [x - 2.4 * scale, 8.4 * scale, z - scale], 723 + Math.floor(x));
       }
     }
-    for (let i = 0; i < 9; i++) {
-      const angle = (i * Math.PI * 2) / 9;
-      const mountain = mesh(
-        this.root,
-        new THREE.ConeGeometry(23 + random() * 15, 30 + random() * 30, 6),
-        i % 2 ? m.rockDark : m.rock,
-        [Math.cos(angle) * 120, 8, Math.sin(angle) * 120 - 20],
-      );
-      mountain.rotation.y = random() * 3;
+    // Faceted, asymmetric ridges replace isolated pyramid silhouettes.
+    for (let i = 0; i < 12; i++) {
+      const angle = (i * Math.PI * 2) / 12;
+      const x = Math.cos(angle) * 140,
+        z = Math.sin(angle) * 140 - 10;
+      const sx = 22 + random() * 16,
+        sy = 20 + random() * 25,
+        sz = 21 + random() * 12;
+      if (!canPlaceVegetation(x, z, Math.hypot(sx, sz))) continue;
+      const mountain = mesh(this.root, weatheredRock(6100 + i, 1), i % 2 ? m.rockDark : m.rock, [
+        x,
+        8,
+        z,
+      ]);
+      mountain.scale.set(sx, sy, sz);
     }
-    // Small landscape clusters avoid the navigation corridors.
-    for (let i = 0; i < 400; i++) {
-      const x = random() * 62 - 31;
-      const z = random() * 73 - 44;
+    // Varied tufts and small stones are also excluded from every underground footprint.
+    for (let i = 0; i < 650; i++) {
+      const x = random() * 64 - 32;
+      const z = random() * 75 - 44;
       if (
         (Math.abs(x) < 10 && z > -5 && z < 23) ||
         (Math.abs(x) < 8 && z < -3) ||
         (x > 8 && x < 30 && z < -3 && z > -26)
       )
         continue;
-      if (i % 5 === 0) {
-        const rock = mesh(
-          this.root,
-          new THREE.DodecahedronGeometry(0.15 + random() * 0.35, 0),
-          m.stone,
-          [x, 0.1, z],
-        );
-        rock.scale.y = 0.6;
+      if (!canPlaceVegetation(x, z, 0.65)) continue;
+      if (i % 6 === 0) {
+        const rock = mesh(this.root, weatheredRock(7100 + i, 0), m.stone, [x, 0.08, z]);
+        rock.scale.set(0.15 + random() * 0.35, 0.12 + random() * 0.14, 0.18 + random() * 0.3);
       } else {
-        const grass = mesh(
-          this.root,
-          new THREE.ConeGeometry(0.16 + random() * 0.15, 0.4 + random() * 0.4, 3),
-          i % 3 ? m.foliageLight : m.foliage,
-          [x, 0.18, z],
-        );
-        grass.rotation.z = (random() - 0.5) * 0.3;
+        const height = 0.18 + random() * 0.33;
+        for (let blade = 0; blade < 3; blade++) {
+          const leaf = mesh(
+            this.root,
+            new THREE.PlaneGeometry(0.045, height),
+            i % 3 ? m.foliageLight : m.foliage,
+            [x + (blade - 1) * 0.06, height / 2, z],
+          );
+          leaf.rotation.y = random() * Math.PI;
+          leaf.rotation.z = (blade - 1) * 0.3;
+        }
       }
     }
   }

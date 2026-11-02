@@ -15,12 +15,47 @@ export class WorldManager {
   target: FixtureDefinition | null = null;
   private readonly flames: THREE.Object3D[] = [];
   private readonly firelights: THREE.PointLight[] = [];
+  private readonly contactMaterial: THREE.MeshBasicMaterial;
 
   constructor(
     private readonly physics: PhysicsWorld,
     private readonly events: EventBus,
   ) {
     this.root = new WorldBuilder(physics, this.materials).build();
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d')!,
+      gradient = ctx.createRadialGradient(64, 64, 8, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(10,12,9,0.42)');
+    gradient.addColorStop(0.5, 'rgba(10,12,9,0.2)');
+    gradient.addColorStop(1, 'rgba(10,12,9,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+    this.contactMaterial = new THREE.MeshBasicMaterial({
+      map: new THREE.CanvasTexture(canvas),
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.7,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+    });
+    for (const fixture of FIXTURES) {
+      const size: readonly [number, number] =
+        fixture.kind === 'counter'
+          ? [5.8, 2.3]
+          : fixture.kind === 'furnace'
+            ? [3.7, 3.2]
+            : fixture.kind === 'cart'
+              ? [3, 4]
+              : fixture.kind === 'bed'
+                ? [3.3, 2.1]
+                : [2.5, 2];
+      const shadow = new THREE.Mesh(new THREE.PlaneGeometry(...size), this.contactMaterial);
+      shadow.position.set(fixture.position.x, 0.024, fixture.position.z);
+      shadow.rotation.set(-Math.PI / 2, fixture.rotation ?? 0, 0, 'YXZ');
+      shadow.renderOrder = 1;
+      this.root.add(shadow);
+    }
     this.root.traverse((object) => {
       if (object.name === 'flame') this.flames.push(object);
       if (object.name === 'firelight' && object instanceof THREE.PointLight)
@@ -61,6 +96,14 @@ export class WorldManager {
 
   dispose(): void {
     this.root.traverse((object) => {
+      if (object instanceof THREE.Points) {
+        object.geometry.dispose();
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        for (const material of materials) {
+          if (material instanceof THREE.PointsMaterial) material.map?.dispose();
+          material.dispose();
+        }
+      }
       if (object instanceof THREE.Mesh) {
         object.geometry.dispose();
         if (
@@ -75,6 +118,8 @@ export class WorldManager {
       }
     });
     this.materials.dispose();
+    this.contactMaterial.map?.dispose();
+    this.contactMaterial.dispose();
     this.root.removeFromParent();
   }
 }

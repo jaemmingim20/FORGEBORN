@@ -1,8 +1,10 @@
-# FORGEBORN Phase 3 — VS Code에서 실행하기
+# FORGEBORN 0.3.1 — Phase 3 그래픽 업데이트 실행하기
+
+최신 ZIP: https://github.com/jaemmingim20/FORGEBORN/raw/refs/heads/main/releases/FORGEBORN-phase3-graphics.zip
 
 ## Go Live로 바로 실행
 
-1. 압축을 풀고 FORGEBORN 폴더를 VS Code로 엽니다.
+1. 기존 Live Server를 종료하고, 새 ZIP을 새 폴더에 압축 해제한 뒤 FORGEBORN 폴더를 VS Code로 엽니다.
 2. Live Server 확장을 설치합니다.
 3. 오른쪽 아래 Go Live를 클릭합니다.
 4. 대장간에 들어가기를 누릅니다.
@@ -40,7 +42,7 @@ npm.cmd run dev
 
 ## 조작
 
-WASD 이동 / 마우스 시점 / Shift 달리기 / Space 점프 / G 지도 / Esc 일시정지
+WASD 이동 / 마우스 시점 / Shift 달리기 / Space 점프 / G 지도 / 3 곡괭이 장착 / 좌클릭 채굴 / Tab 인벤토리 / E 용광로 / Esc 일시정지
 
 ## 함께 포함한 파일
 
@@ -48,7 +50,7 @@ WASD 이동 / 마우스 시점 / Shift 달리기 / Space 점프 / G 지도 / Esc
 - GDD.md: 공식 기획서
 - package-lock.json: 재현 가능한 의존성 설치
 - tests/: 물리 및 브라우저 테스트
-- docs/: 구조 설계와 Phase 1 완료 보고
+- docs/: 구조 설계, 단계별 구현 보고와 GRAPHICS.md 그래픽 변경 기록
 - standalone/index.html: 코드·에셋이 포함된 단일 HTML 실행본
 - THIRD_PARTY_LICENSES/: 실행본에 포함된 라이브러리와 글꼴 라이선스
 
@@ -87,3 +89,9 @@ npm run test:browser를 실행합니다.
 
 광산은 더 큰 분기와 순환 갱도로 바뀌었습니다. G를 눌러 주변 지하 지도를 보세요.
 화면 오른쪽 위의 출구 방향과 통로 표지를 따라 대장간으로 돌아올 수 있습니다.
+
+## 이번 그래픽 업데이트에서 볼 수 있는 것
+
+큰 절벽 갱도 입구, 거친 동굴 암벽과 아치 천장, 세부 지붕·목조 골조·석재 기단을 더한 대장간, 질감과 형태를 개선한 곡괭이·방패 표적을 볼 수 있습니다. 광산 전체와 입구의 식생 배치 영역을 분리해 나무가 동굴에 겹치지 않게 수정했습니다.
+
+게임 규칙은 Phase 3 그대로입니다. 참고 이미지는 디자인 방향으로 사용했으며 이미지 속 워터마크가 있는 원본 그림을 게임 에셋으로 넣지 않았습니다. 무기 제작과 전투는 아직 없고, 진행도는 현재 세션에만 유지됩니다.

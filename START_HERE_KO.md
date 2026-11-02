@@ -1,5 +1,17 @@
 # FORGEBORN — VS Code에서 실행하기
 
+## Go Live로 바로 실행
+
+1. 압축을 풀고 FORGEBORN 폴더를 VS Code로 엽니다.
+2. Live Server 확장을 설치합니다.
+3. 오른쪽 아래 Go Live를 클릭합니다.
+4. 대장간에 들어가기를 누릅니다.
+
+.vscode/settings.json이 standalone 폴더를 서버 루트로 지정합니다.
+소스를 수정한 뒤에는 npm run build:standalone으로 실행본을 갱신하세요.
+
+## Vite 개발 실행
+
 1. 이 ZIP의 압축을 해제합니다.
 2. Node.js 24 LTS를 설치합니다. 이미 Node.js 22.12 이상이 있다면 사용할 수 있습니다.
    공식 다운로드: https://nodejs.org/
@@ -27,9 +39,11 @@ npm.cmd run dev
 다음 실행부터는 npm run dev만 실행하면 됩니다.
 
 ## 조작
+
 WASD 이동 / 마우스 시점 / Shift 달리기 / Space 점프 / G 지도 / Esc 일시정지
 
 ## 함께 포함한 파일
+
 - src/: TypeScript 게임 소스
 - GDD.md: 공식 기획서
 - package-lock.json: 재현 가능한 의존성 설치
@@ -38,10 +52,11 @@ WASD 이동 / 마우스 시점 / Shift 달리기 / Space 점프 / G 지도 / Esc
 - standalone/index.html: 코드·에셋이 포함된 단일 HTML 실행본
 - THIRD_PARTY_LICENSES/: 실행본에 포함된 라이브러리와 글꼴 라이선스
 
-개발 실행에는 npm run dev를 사용합니다. VS Code Live Server는 TypeScript를 변환하지 않습니다.
+TypeScript 수정 사항의 즉시 반영은 npm run dev를 사용합니다. Go Live는 빌드된 실행본을 제공합니다.
 node_modules와 .git은 압축에 포함하지 않았습니다. npm ci가 필요한 패키지를 설치합니다.
 
 ## 검증 명령
+
 npm run typecheck
 npm test
 npm run build

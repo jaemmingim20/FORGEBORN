@@ -8,6 +8,12 @@
 
 ## 미리보기에서 바로 실행
 
+### VS Code Go Live
+
+프로젝트 ZIP을 풀고 `FORGEBORN` 폴더를 VS Code로 엽니다. Live Server 확장을 설치한 뒤 오른쪽 아래 **Go Live**를 누르세요. 프로젝트 설정이 `standalone/`을 서버 루트로 지정하므로 게임이 바로 열립니다. 기존 실행본을 사용하는 경우 npm 설치가 필요하지 않습니다.
+
+TypeScript 코드를 수정한 뒤에는 아래 빌드 명령으로 실행본을 갱신하세요. 개발 중 즉시 변경 반영은 `npm run dev`를 사용합니다.
+
 ```sh
 npm run build
 ```

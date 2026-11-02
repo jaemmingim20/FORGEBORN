@@ -1,6 +1,7 @@
+import type { InventorySnapshot } from '../inventory/InventoryManager';
 export type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 export type ZoneId = 'counter' | 'forge' | 'yard' | 'training' | 'mine';
-export type GameState = 'ready' | 'playing' | 'paused';
+export type GameState = 'ready' | 'playing' | 'paused' | 'inventory';
 
 export interface Bounds {
   minX: number;
@@ -67,6 +68,8 @@ export interface GameEvents {
   zoneChanged: ZoneDefinition;
   targetChanged: FixtureDefinition | null;
   controlError: string;
+  inventoryChanged: InventorySnapshot;
+  miningFeedback: string;
 }
 
 export interface Disposable {

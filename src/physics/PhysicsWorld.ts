@@ -59,6 +59,11 @@ export class PhysicsWorld {
     this.world.step();
   }
 
+  removeCollider(collider: RAPIER.Collider): void {
+    this.fixtures.delete(collider.handle);
+    this.world.removeCollider(collider, true);
+  }
+
   dispose(): void {
     this.fixtures.clear();
     this.world.free();

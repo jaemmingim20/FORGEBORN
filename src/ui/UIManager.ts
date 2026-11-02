@@ -29,10 +29,10 @@ export class UIManager {
     this.element.id = 'game-ui';
     this.element.innerHTML = `
       <div class="screen-grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
-      <header class="masthead"><div class="brand">${ANVIL}<span>FORGEBORN<small>A BLACKSMITH'S TALE</small></span></div><div class="phase-badge"><i></i> PHASE 01 <span>기본 3D 월드</span></div></header>
+      <header class="masthead"><div class="brand">${ANVIL}<span>FORGEBORN<small>A BLACKSMITH'S TALE</small></span></div><div class="phase-badge"><i></i> PHASE 02 <span>광산과 첫 채굴</span></div></header>
       <section class="menu-overlay" aria-label="게임 메뉴">
         <div class="title-layout">
-          <div class="chapter"><span>CHAPTER I</span><b></b> FIRST EMBERS</div>
+          <div class="chapter"><span>CHAPTER II</span><b></b> FIRST ORE</div>
           <h1>FORGE<span>BORN</span><em>불꽃에서 시작되는 이야기</em></h1>
           <p class="intro">숲 가장자리의 작은 대장간.<br>차가운 모루, 따뜻한 불씨, 그리고 당신의 첫걸음.</p>
           <button class="enter-button" type="button" data-action="enter"><span>대장간에 들어가기</span><span aria-hidden="true">↗</span></button>
@@ -127,7 +127,7 @@ export class UIManager {
 
   private setState(state: GameState): void {
     this.state = state;
-    this.overlay.hidden = state === 'playing';
+    this.overlay.hidden = state === 'playing' || state === 'inventory';
     this.hud.hidden = state !== 'playing';
     this.get('.title-layout').hidden = state !== 'ready';
     this.get('.pause-layout').hidden = state !== 'paused';
@@ -171,7 +171,7 @@ export class UIManager {
   update(position: Vec3, yaw: number): void {
     this.playerMarker.setAttribute(
       'transform',
-      `translate(${position.x} ${position.z}) rotate(${(-yaw * 180) / Math.PI})`,
+      `translate(${position.x} ${Math.max(-39, position.z)}) rotate(${(-yaw * 180) / Math.PI})`,
     );
     const bearing = ((((-yaw * 180) / Math.PI) % 360) + 360) % 360;
     this.get('#bearing').textContent = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][

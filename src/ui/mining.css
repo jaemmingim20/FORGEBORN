@@ -1,0 +1,243 @@
+.mining-ui {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  color: #e9e1c9;
+}
+.mining-hud {
+  position: absolute;
+  inset: 0;
+}
+.mining-objective {
+  position: absolute;
+  top: 100px;
+  left: 3.7vw;
+  max-width: 310px;
+  padding: 12px 16px;
+  border-left: 2px solid #d6b477;
+  background: #14271cbb;
+}
+.mining-objective > span {
+  font: 9px sans-serif;
+  letter-spacing: 0.18em;
+  color: #d6b477;
+}
+.mining-objective p {
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 8px 0 0;
+}
+.mine-depth {
+  position: absolute;
+  top: 100px;
+  right: 3.7vw;
+  text-align: right;
+  padding: 12px 16px;
+  background: #14271cbb;
+  border-right: 2px solid #d6b477;
+}
+.mine-depth b {
+  font:
+    28px Georgia,
+    serif;
+  display: block;
+  color: #dfc68f;
+}
+.mine-depth span {
+  font-size: 12px;
+  display: block;
+  margin: 5px 0;
+}
+.mine-depth small {
+  font-size: 9px;
+  color: #b8c6b5;
+}
+.ore-target {
+  position: absolute;
+  top: 54%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 290px;
+  padding: 14px 20px;
+  text-align: center;
+  background: #14251ded;
+  border: 1px solid #cfb47677;
+}
+.ore-target small {
+  font: 8px sans-serif;
+  letter-spacing: 0.18em;
+  color: #bfaf89;
+}
+.ore-target h3 {
+  font: 20px var(--serif);
+  margin: 8px 0;
+}
+.ore-target p,
+.ore-target > span {
+  font-size: 11px;
+  display: block;
+}
+.ore-target progress {
+  width: 100%;
+  height: 6px;
+  accent-color: #d6b477;
+  margin: 8px 0 12px;
+}
+.mining-toast {
+  position: absolute;
+  bottom: 135px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 11px 22px;
+  font-size: 12px;
+  background: #233426ed;
+  border: 1px solid #d6b47766;
+}
+.equipment-bar {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: #14251ee8;
+  border: 1px solid #d6b47755;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.equipment-bar i {
+  height: 12px;
+  width: 1px;
+  background: #c5b17a55;
+  margin: 0 5px;
+}
+.inventory-panel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #071a13b8;
+  pointer-events: auto;
+  padding: 30px;
+}
+.inventory-card {
+  width: min(720px, 95vw);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 25px;
+  background: #1b2b23;
+  border: 1px solid #d6b47777;
+  box-shadow: 0 20px 80px #0007;
+}
+.inventory-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #d6b47744;
+  padding-bottom: 14px;
+}
+.inventory-card header small {
+  font: 9px sans-serif;
+  letter-spacing: 0.2em;
+  color: #d6b477;
+}
+.inventory-card h2 {
+  font: 26px var(--serif);
+  margin: 7px 0 0;
+}
+.inventory-card button {
+  border: 1px solid #d6b47766;
+  padding: 9px 15px;
+  background: #d6b477;
+  color: #17251c;
+  font-size: 11px;
+}
+.inventory-capacity {
+  font-size: 11px;
+  color: #c1c9b4;
+  margin: 18px 0;
+}
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.inventory-slot {
+  min-height: 87px;
+  background: #101f19;
+  border: 1px solid #a994684d;
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.inventory-slot .item-icon {
+  font-size: 22px;
+}
+.inventory-slot b {
+  font-size: 10px;
+  font-weight: 400;
+}
+.inventory-slot small {
+  font-size: 10px;
+  color: #d6b477;
+}
+.inventory-slot.empty {
+  color: #7f8b7555;
+  font:
+    11px Georgia,
+    serif;
+  border-style: dashed;
+}
+.inventory-tool {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  border-top: 1px solid #c2ab7044;
+  padding-top: 16px;
+}
+.inventory-tool b {
+  font-size: 12px;
+}
+.inventory-tool p,
+.inventory-note {
+  color: #b0bda6;
+  font-size: 10px;
+  line-height: 1.9;
+}
+.inventory-note {
+  margin-bottom: 0;
+}
+@media (max-width: 1000px) {
+  .equipment-bar {
+    bottom: 65px;
+  }
+  .mining-objective {
+    max-width: 240px;
+    top: 88px;
+  }
+  .mine-depth {
+    top: 88px;
+  }
+  .mine-depth small {
+    max-width: 170px;
+    display: block;
+  }
+}
+@media (max-height: 650px) {
+  .inventory-card {
+    padding: 16px;
+  }
+  .inventory-slot {
+    min-height: 65px;
+  }
+  .inventory-note {
+    font-size: 9px;
+  }
+}

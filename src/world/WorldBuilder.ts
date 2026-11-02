@@ -1,3 +1,4 @@
+import { buildMine } from './MineBuilder';
 import * as THREE from 'three';
 import type { BoxColliderSpec } from '../core/types';
 import { PhysicsWorld } from '../physics/PhysicsWorld';
@@ -239,7 +240,7 @@ export class WorldBuilder {
 
   private mine(): void {
     const m = this.materials;
-    // Short walkable entrance only. The 500m mine belongs to Phase 2+.
+    // Keep the original entrance and connect it to the Phase 2 underground mine.
     this.solid(m.rockDark, [1.7, 4.7, 11], [-3.7, 2.35, -37]);
     this.solid(m.rockDark, [1.7, 4.7, 11], [3.7, 2.35, -37]);
     this.solid(m.rockDark, [8.8, 1.8, 11], [0, 5.1, -37]);
@@ -249,11 +250,6 @@ export class WorldBuilder {
       this.solid(m.wood, [5.7, 0.35, 0.4], [0, 3.9, z]);
       for (const x of [-2.6, 2.6]) beam(this.root, m.wood, [x, 2.9, z], [x * 0.6, 3.8, z], 0.18);
     }
-    this.solid(m.rockDark, [6.1, 4.3, 0.6], [0, 2.1, -42.3]);
-    for (let i = 0; i < 7; i++)
-      box(this.root, m.wood, [0.54, 3.2, 0.12], [-1.8 + i * 0.6, 1.6, -41.95]);
-    beam(this.root, m.timber, [-2.3, 0.25, -41.8], [2.3, 3.2, -41.8], 0.2);
-    textSign(this.root, 'THE DEEP AWAITS', 'MINE INTERIOR · PHASE 2', [0, 1.85, -41.7], 3.2);
     textSign(this.root, 'THE OLD MINE', 'BEYOND THE LAST LIGHT', [0, 4.5, -31.2], 4.8);
     for (const x of [-0.8, 0.8]) box(this.root, m.iron, [0.07, 0.04, 10], [x, 0.04, -36.5]);
     for (let z = -32; z >= -41; z -= 0.9)
@@ -279,7 +275,7 @@ export class WorldBuilder {
         size: { x: rock.scale.x * 1.25, y: rock.scale.y * 1.5, z: rock.scale.z * 1.25 },
       });
     }
-    this.fence([-33.5, 0, -45.5], [33.5, 0, -45.5]);
+    buildMine(this.root, this.physics, m);
   }
 
   private fixtures(): void {

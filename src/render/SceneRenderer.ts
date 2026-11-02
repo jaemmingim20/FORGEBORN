@@ -5,6 +5,8 @@ export class SceneRenderer {
   readonly camera = new THREE.PerspectiveCamera(72, 1, 0.06, 350);
   readonly renderer: THREE.WebGLRenderer;
   private readonly sky: THREE.Mesh;
+  private readonly ambient = new THREE.HemisphereLight('#c4e0e6', '#746448', 2.1);
+  private readonly sunlight = new THREE.DirectionalLight('#ffdb9c', 3.1);
   private readonly resizeObserver: ResizeObserver;
 
   constructor(readonly container: HTMLElement) {
@@ -40,8 +42,8 @@ export class SceneRenderer {
     });
     this.sky = new THREE.Mesh(new THREE.SphereGeometry(280, 24, 12), skyMaterial);
     this.scene.add(this.sky);
-    this.scene.add(new THREE.HemisphereLight('#c4e0e6', '#746448', 2.1));
-    const sun = new THREE.DirectionalLight('#ffdb9c', 3.1);
+    this.scene.add(this.ambient);
+    const sun = this.sunlight;
     sun.position.set(-25, 42, -16);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
@@ -64,6 +66,16 @@ export class SceneRenderer {
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+  }
+
+  setUnderground(depth: number): void {
+    const t = Math.min(1, depth / 12);
+    this.ambient.intensity = 2.1 * (1 - t) + 0.1 * t;
+    this.sunlight.intensity = 3.1 * (1 - t);
+    const fog = this.scene.fog as THREE.Fog;
+    fog.color.set('#a1aea0').lerp(new THREE.Color('#111c1e'), t);
+    fog.near = 38 * (1 - t) + 6 * t;
+    fog.far = 145 * (1 - t) + 35 * t;
   }
 
   render(): void {

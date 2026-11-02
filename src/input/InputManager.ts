@@ -13,12 +13,22 @@ export class InputManager {
     private readonly events: EventBus,
     onLock: (locked: boolean) => void,
     onMap: () => void,
+    actions: { inventory?(): boolean; equip?(): void; attack?(): void } = {},
   ) {
     const options = { signal: this.abort.signal };
     document.addEventListener(
       'keydown',
       (event) => {
+        if (event.code === 'Tab' && !event.repeat && actions.inventory?.()) {
+          event.preventDefault();
+          return;
+        }
+        if (event.code === 'Escape' && !this.locked) {
+          actions.inventory?.();
+          return;
+        }
         if (!this.locked) return;
+        if (event.code === 'Digit3' && !event.repeat) actions.equip?.();
         if (event.code === 'Escape') {
           document.exitPointerLock();
           return;
@@ -35,6 +45,13 @@ export class InputManager {
       'keyup',
       (event) => {
         this.keys.delete(event.code);
+      },
+      options,
+    );
+    document.addEventListener(
+      'mousedown',
+      (event) => {
+        if (this.locked && event.button === 0) actions.attack?.();
       },
       options,
     );

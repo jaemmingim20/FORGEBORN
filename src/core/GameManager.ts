@@ -1,3 +1,8 @@
+import { InventoryManager } from '../inventory/InventoryManager';
+import { MiningManager } from '../mining/MiningManager';
+import { generateVeins, mineDepth } from '../mining/data';
+import { MiningView } from '../mining/MiningView';
+import { MiningUI } from '../ui/MiningUI';
 import * as THREE from 'three';
 import { EventBus } from './EventBus';
 import type { GameState, Vec3 } from './types';
@@ -27,6 +32,10 @@ export interface ForgeDebug {
   teleport(position: Vec3): void;
   look(yaw: number, pitch?: number): void;
   fixtureIds(): string[];
+  miningSnapshot(): {
+    inventory: ReturnType<InventoryManager['snapshot']>;
+    veins: Array<{ id: string; ore: string; position: Vec3; remaining: number; depleted: boolean }>;
+  };
 }
 
 declare global {
@@ -43,6 +52,10 @@ export class GameManager {
   readonly input: InputManager;
   readonly player: PlayerController;
   readonly ui: UIManager;
+  readonly inventory = new InventoryManager(this.events);
+  readonly mining = new MiningManager(generateVeins(), this.inventory, this.events);
+  readonly miningView: MiningView;
+  readonly miningUI: MiningUI;
   private state: GameState = 'ready';
   private animationFrame = 0;
   private lastTime = performance.now();
@@ -84,6 +97,11 @@ export class GameManager {
         else if (this.state === 'playing') this.setState('paused');
       },
       () => this.ui.toggleMap(),
+      {
+        inventory: () => this.toggleInventory(),
+        equip: () => this.inventory.toggleEquip(),
+        attack: () => this.miningView.swing(this.elapsed),
+      },
     );
     this.player = new PlayerController(this.motor, this.input, this.scene.camera);
     this.ui = new UIManager(container, this.events, {
@@ -101,6 +119,13 @@ export class GameManager {
         this.player.headBob = enabled;
       },
     });
+    this.scene.scene.add(this.scene.camera);
+    this.miningView = new MiningView(this.mining, physics, this.scene.camera, this.events);
+    this.scene.scene.add(this.miningView.root);
+    this.miningUI = new MiningUI(container, this.inventory, this.mining, this.events, () =>
+      this.toggleInventory(),
+    );
+    this.inventory.notify();
     this.player.headBob = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     const checkbox = this.ui.element.querySelector<HTMLInputElement>('#head-bob');
     if (checkbox) checkbox.checked = this.player.headBob;
@@ -121,6 +146,19 @@ export class GameManager {
     this.animationFrame = requestAnimationFrame(this.frame);
   }
 
+  private toggleInventory(): boolean {
+    if (this.state === 'playing') {
+      this.setState('inventory');
+      document.exitPointerLock();
+      return true;
+    }
+    if (this.state === 'inventory') {
+      void this.input.requestLock();
+      return true;
+    }
+    return false;
+  }
+
   private setState(state: GameState): void {
     if (this.state === state) return;
     this.state = state;
@@ -129,6 +167,7 @@ export class GameManager {
     this.input.clear();
     this.events.emit('stateChanged', state);
     if (state === 'playing') this.player.render(1, 0);
+    else this.miningView?.cancel();
   }
 
   private readonly frame = (now: number): void => {
@@ -156,12 +195,22 @@ export class GameManager {
           this.motor.collider,
           this.elapsed,
         );
+        this.miningView.update(dt, this.elapsed, this.motor.collider, true);
+        this.miningUI.update(
+          this.motor.position,
+          this.world.zone?.id,
+          this.miningView.targetId,
+          this.elapsed,
+        );
+        this.scene.setUnderground(mineDepth(this.motor.position));
         this.ui.update(this.motor.position, this.player.yaw);
       } else if (this.state === 'ready') {
         this.scene.camera.position.set(26, 18, 32);
         this.scene.camera.lookAt(0, 1.5, -8);
         this.world.animate(now / 1000);
       }
+      if (this.state !== 'playing')
+        this.miningView.update(0, this.elapsed, this.motor.collider, false);
       this.scene.render();
       this.animationFrame = requestAnimationFrame(this.frame);
     } catch (error) {
@@ -192,6 +241,16 @@ export class GameManager {
         this.player.pitch = pitch;
       },
       fixtureIds: () => [...this.world.fixtures.keys()],
+      miningSnapshot: () => ({
+        inventory: this.inventory.snapshot(),
+        veins: [...this.mining.veins.values()].map((v) => ({
+          id: v.id,
+          ore: v.ore,
+          position: v.position,
+          remaining: v.remaining,
+          depleted: v.depleted,
+        })),
+      }),
     };
   }
 
@@ -201,6 +260,8 @@ export class GameManager {
     cancelAnimationFrame(this.animationFrame);
     this.input.dispose();
     this.ui.dispose();
+    this.miningUI.dispose();
+    this.miningView.dispose();
     this.motor.dispose();
     this.world.dispose();
     this.scene.dispose();

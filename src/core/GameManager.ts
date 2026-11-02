@@ -1,3 +1,7 @@
+import { SmeltingManager } from '../smelting/SmeltingManager';
+import type { Furnace } from '../smelting/SmeltingManager';
+import type { ItemId } from '../items/data';
+import { SmeltingUI } from '../ui/SmeltingUI';
 import { InventoryManager } from '../inventory/InventoryManager';
 import { MiningManager } from '../mining/MiningManager';
 import { generateVeins, mineDepth } from '../mining/data';
@@ -32,6 +36,9 @@ export interface ForgeDebug {
   teleport(position: Vec3): void;
   look(yaw: number, pitch?: number): void;
   fixtureIds(): string[];
+  giveItem(item: ItemId, quantity: number): boolean;
+  stepSmelting(seconds: number): void;
+  smeltingSnapshot(): Furnace[];
   miningSnapshot(): {
     inventory: ReturnType<InventoryManager['snapshot']>;
     veins: Array<{ id: string; ore: string; position: Vec3; remaining: number; depleted: boolean }>;
@@ -54,6 +61,8 @@ export class GameManager {
   readonly ui: UIManager;
   readonly inventory = new InventoryManager(this.events);
   readonly mining = new MiningManager(generateVeins(), this.inventory, this.events);
+  readonly smelting = new SmeltingManager(this.inventory, this.events);
+  readonly smeltingUI: SmeltingUI;
   readonly miningView: MiningView;
   readonly miningUI: MiningUI;
   private state: GameState = 'ready';
@@ -101,6 +110,12 @@ export class GameManager {
         inventory: () => this.toggleInventory(),
         equip: () => this.inventory.toggleEquip(),
         attack: () => this.miningView.swing(this.elapsed),
+        interact: () => {
+          if (this.state === 'playing' && this.world.target?.kind === 'furnace') {
+            this.setState('smelting');
+            document.exitPointerLock();
+          }
+        },
       },
     );
     this.player = new PlayerController(this.motor, this.input, this.scene.camera);
@@ -123,6 +138,9 @@ export class GameManager {
     this.miningView = new MiningView(this.mining, physics, this.scene.camera, this.events);
     this.scene.scene.add(this.miningView.root);
     this.miningUI = new MiningUI(container, this.inventory, this.mining, this.events, () =>
+      this.toggleInventory(),
+    );
+    this.smeltingUI = new SmeltingUI(container, this.smelting, this.events, () =>
       this.toggleInventory(),
     );
     this.inventory.notify();
@@ -152,7 +170,7 @@ export class GameManager {
       document.exitPointerLock();
       return true;
     }
-    if (this.state === 'inventory') {
+    if (this.state === 'inventory' || this.state === 'smelting') {
       void this.input.requestLock();
       return true;
     }
@@ -211,6 +229,9 @@ export class GameManager {
       }
       if (this.state !== 'playing')
         this.miningView.update(0, this.elapsed, this.motor.collider, false);
+      if (this.state === 'playing' || this.state === 'inventory' || this.state === 'smelting')
+        this.smelting.update(dt);
+      this.smeltingUI.update(dt);
       this.scene.render();
       this.animationFrame = requestAnimationFrame(this.frame);
     } catch (error) {
@@ -241,6 +262,9 @@ export class GameManager {
         this.player.pitch = pitch;
       },
       fixtureIds: () => [...this.world.fixtures.keys()],
+      giveItem: (item, quantity) => this.inventory.add(item, quantity),
+      stepSmelting: (seconds) => this.smelting.update(seconds),
+      smeltingSnapshot: () => [...this.smelting.furnaces.values()],
       miningSnapshot: () => ({
         inventory: this.inventory.snapshot(),
         veins: [...this.mining.veins.values()].map((v) => ({
@@ -260,6 +284,7 @@ export class GameManager {
     cancelAnimationFrame(this.animationFrame);
     this.input.dispose();
     this.ui.dispose();
+    this.smeltingUI.dispose();
     this.miningUI.dispose();
     this.miningView.dispose();
     this.motor.dispose();

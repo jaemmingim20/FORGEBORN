@@ -13,7 +13,7 @@ export class InputManager {
     private readonly events: EventBus,
     onLock: (locked: boolean) => void,
     onMap: () => void,
-    actions: { inventory?(): boolean; equip?(): void; attack?(): void } = {},
+    actions: { inventory?(): boolean; equip?(): void; attack?(): void; interact?(): void } = {},
   ) {
     const options = { signal: this.abort.signal };
     document.addEventListener(
@@ -28,6 +28,7 @@ export class InputManager {
           return;
         }
         if (!this.locked) return;
+        if (event.code === 'KeyE' && !event.repeat) actions.interact?.();
         if (event.code === 'Digit3' && !event.repeat) actions.equip?.();
         if (event.code === 'Escape') {
           document.exitPointerLock();

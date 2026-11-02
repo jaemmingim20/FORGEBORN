@@ -25,6 +25,7 @@ export default defineConfig({
     },
   },
   projects: [
+    { name: 'phase3', testMatch: '**/phase3.spec.ts' },
     { name: 'phase2', testMatch: '**/phase2.spec.ts' },
     { name: 'development', testMatch: '**/game.spec.ts' },
     { name: 'delivery', testMatch: '**/boot.spec.ts' },

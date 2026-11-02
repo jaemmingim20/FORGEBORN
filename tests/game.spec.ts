@@ -1,3 +1,5 @@
+import { MINE_LAYOUT, cellKey, cellPosition } from '../src/world/mineLayout';
+const mineEnd = cellPosition(MINE_LAYOUT.get(cellKey(0, 74))!);
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import type { DebugSnapshot } from '../src/core/GameManager';
@@ -110,7 +112,7 @@ test('실제 키 입력으로 카운터↔대장간↔뒷마당↔훈련장↔�
   expect(errors).toEqual([]);
 });
 
-test('월드 설비 충돌·시선 안내와 500m 광산 끝 벽', async ({ page }) => {
+test('월드 설비 충돌·시선 안내와 확장 광산 끝 벽', async ({ page }) => {
   await start(page);
   const fixtures = await page.evaluate(() => window.__forgeDebug!.fixtureIds());
   expect(fixtures).toHaveLength(17);
@@ -125,16 +127,16 @@ test('월드 설비 충돌·시선 안내와 500m 광산 끝 벽', async ({ page
   await page.waitForTimeout(300);
   await page.keyboard.up('KeyW');
   expect((await snapshot(page)).position.z).toBeGreaterThan(1.55);
-  await page.evaluate(() => {
-    window.__forgeDebug!.teleport({ x: 0, y: 1, z: -529 });
+  await page.evaluate((end) => {
+    window.__forgeDebug!.teleport({ x: end.x, y: 1, z: end.z + 3 });
     window.__forgeDebug!.look(0);
-  });
+  }, mineEnd);
   await page.keyboard.down('KeyW');
-  await expect.poll(async () => (await snapshot(page)).position.z).toBeLessThan(-531.6);
+  await expect.poll(async () => (await snapshot(page)).position.z).toBeLessThan(mineEnd.z - 4.6);
   await page.waitForTimeout(300);
   await page.keyboard.up('KeyW');
   const end = await snapshot(page);
-  expect(end.position.z).toBeGreaterThan(-531.8);
-  expect(end.position.z).toBeLessThan(-531.3);
+  expect(end.position.z).toBeGreaterThan(mineEnd.z - 4.8);
+  expect(end.position.z).toBeLessThan(mineEnd.z - 4.3);
   expect(end.position.y).toBeGreaterThan(0.8);
 });

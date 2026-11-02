@@ -3,7 +3,8 @@ import type { GameState, Vec3 } from '../core/types';
 import { InventoryManager } from '../inventory/InventoryManager';
 import { MiningManager } from '../mining/MiningManager';
 import { mineDepth, mineSection, ORES } from '../mining/data';
-import type { OreId } from '../mining/data';
+import { ITEMS } from '../items/data';
+import { exitDirection } from '../world/mineLayout';
 import './mining.css';
 
 export class MiningUI {
@@ -33,7 +34,7 @@ export class MiningUI {
         <div class="inventory-card"><header><div><small>YOUR SATCHEL</small><h2>인벤토리</h2></div><button class="inventory-close" type="button" aria-label="인벤토리 닫기">닫기 · Tab</button></header>
         <p class="inventory-capacity"></p><div class="inventory-grid"></div>
         <div class="inventory-tool"><div><b>낡은 곡괭이</b><p>기본 광물 채굴용 · 판매/분해 불가</p></div><button class="inventory-equip" type="button"></button></div>
-        <p class="inventory-note">광석은 한 칸에 99개까지 보관합니다. 진행 상태는 현재 세션에 유지됩니다.<br>제련·제작·거래·영구 저장은 이후 단계에서 연결됩니다.</p></div>
+        <p class="inventory-note">광석은 한 칸에 99개까지 보관합니다. 진행 상태는 현재 세션에 유지됩니다.<br>제련 재료도 보관합니다. 제작·거래·영구 저장은 이후 단계에서 연결됩니다.</p></div>
       </section>`;
     container.append(this.element);
     this.get('.inventory-close').addEventListener('click', close);
@@ -62,7 +63,7 @@ export class MiningUI {
   private renderInventory(): void {
     const snapshot = this.inventory.snapshot();
     this.get('.inventory-capacity').textContent =
-      `${snapshot.slots.length} / ${snapshot.capacity}칸 사용 · 광석 ${snapshot.slots.filter((s) => s.item !== 'worn-pickaxe').reduce((n, s) => n + s.quantity, 0)}개`;
+      `${snapshot.slots.length} / ${snapshot.capacity}칸 사용 · 아이템 ${snapshot.slots.filter((s) => s.item !== 'worn-pickaxe').reduce((n, s) => n + s.quantity, 0)}개`;
     const grid = this.get('.inventory-grid');
     grid.replaceChildren();
     for (let i = 0; i < snapshot.capacity; i++) {
@@ -71,10 +72,10 @@ export class MiningUI {
       const item = snapshot.slots[i];
       if (item) {
         const tool = item.item === 'worn-pickaxe';
-        const data = tool ? { name: '낡은 곡괭이', color: '#c6ad7d' } : ORES[item.item as OreId];
+        const data = ITEMS[item.item];
         const icon = document.createElement('span');
         icon.className = 'item-icon';
-        icon.textContent = tool ? '⚒' : '◆';
+        icon.textContent = tool ? '⚒' : data.category === 'material' ? '▰' : '◆';
         icon.style.color = data.color;
         const name = document.createElement('b');
         name.textContent = data.name;
@@ -104,6 +105,8 @@ export class MiningUI {
     this.get('.mine-depth').hidden = !underground;
     this.get('.mine-depth b').textContent = `${Math.floor(depth)} m`;
     this.get('.mine-depth span').textContent = mineSection(depth);
+    this.get('.mine-depth small').textContent =
+      `출구 방향: ${exitDirection(position)} · G 지하 지도`;
     const target = targetId ? this.mining.veins.get(targetId) : null;
     this.get('.ore-target').hidden = !target || target.depleted || this.state !== 'playing';
     if (target && !target.depleted) {

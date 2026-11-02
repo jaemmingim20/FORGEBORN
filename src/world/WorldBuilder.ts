@@ -275,6 +275,8 @@ export class WorldBuilder {
         size: { x: rock.scale.x * 1.25, y: rock.scale.y * 1.5, z: rock.scale.z * 1.25 },
       });
     }
+    this.fence([-33.5, 0, -45.5], [-7, 0, -45.5]);
+    this.fence([7, 0, -45.5], [33.5, 0, -45.5]);
     buildMine(this.root, this.physics, m);
   }
 

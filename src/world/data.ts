@@ -1,7 +1,7 @@
 import type { FixtureDefinition, Vec3, ZoneDefinition, ZoneId } from '../core/types';
 
 export const WORLD_SEED = 7026;
-export const WORLD_BOUNDS = { minX: -34, maxX: 34, minZ: -534, maxZ: 31 };
+export const WORLD_BOUNDS = { minX: -150, maxX: 150, minZ: -900, maxZ: 31 };
 export const PLAYER_SPAWN: Vec3 = { x: 0, y: 1.05, z: 10 };
 
 export const ZONES: readonly ZoneDefinition[] = [
@@ -34,7 +34,7 @@ export const ZONES: readonly ZoneDefinition[] = [
     name: '광산',
     english: 'THE OLD MINE',
     description: '깊은 산 아래, 아직 쓰이지 않은 이야기',
-    bounds: { minX: -12, maxX: 12, minZ: -533, maxZ: -27 },
+    bounds: { minX: -140, maxX: 140, minZ: -899, maxZ: -27 },
     map: [40, 9],
   },
   {

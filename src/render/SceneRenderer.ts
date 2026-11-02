@@ -70,7 +70,7 @@ export class SceneRenderer {
 
   setUnderground(depth: number): void {
     const t = Math.min(1, depth / 12);
-    this.ambient.intensity = 2.1 * (1 - t) + 0.1 * t;
+    this.ambient.intensity = 2.1 * (1 - t) + 0.7 * t;
     this.sunlight.intensity = 3.1 * (1 - t);
     const fog = this.scene.fog as THREE.Fog;
     fog.color.set('#a1aea0').lerp(new THREE.Color('#111c1e'), t);

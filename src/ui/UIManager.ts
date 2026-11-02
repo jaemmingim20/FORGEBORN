@@ -1,3 +1,4 @@
+import { MINE_LAYOUT, cellPosition } from '../world/mineLayout';
 import { EventBus } from '../core/EventBus';
 import type { FixtureDefinition, GameState, Vec3, ZoneDefinition } from '../core/types';
 import { ZONES } from '../world/data';
@@ -29,10 +30,10 @@ export class UIManager {
     this.element.id = 'game-ui';
     this.element.innerHTML = `
       <div class="screen-grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
-      <header class="masthead"><div class="brand">${ANVIL}<span>FORGEBORN<small>A BLACKSMITH'S TALE</small></span></div><div class="phase-badge"><i></i> PHASE 02 <span>광산과 첫 채굴</span></div></header>
+      <header class="masthead"><div class="brand">${ANVIL}<span>FORGEBORN<small>A BLACKSMITH'S TALE</small></span></div><div class="phase-badge"><i></i> PHASE 03 <span>불꽃과 제련</span></div></header>
       <section class="menu-overlay" aria-label="게임 메뉴">
         <div class="title-layout">
-          <div class="chapter"><span>CHAPTER II</span><b></b> FIRST ORE</div>
+          <div class="chapter"><span>CHAPTER III</span><b></b> FIRE INTO METAL</div>
           <h1>FORGE<span>BORN</span><em>불꽃에서 시작되는 이야기</em></h1>
           <p class="intro">숲 가장자리의 작은 대장간.<br>차가운 모루, 따뜻한 불씨, 그리고 당신의 첫걸음.</p>
           <button class="enter-button" type="button" data-action="enter"><span>대장간에 들어가기</span><span aria-hidden="true">↗</span></button>
@@ -72,6 +73,19 @@ export class UIManager {
     this.hud = this.get('.hud');
     this.target = this.get('.fixture-tooltip');
     this.playerMarker = this.element.querySelector<SVGElement>('#map-player')!;
+    const map = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    map.classList.add('underground-map');
+    map.setAttribute('aria-label', '주변 지하 통로 지도');
+    map.style.display = 'none';
+    map.innerHTML =
+      [...MINE_LAYOUT.values()]
+        .map((cell) => {
+          const p = cellPosition(cell);
+          return `<rect class="tunnel-cell ${cell.chamber ? 'chamber-cell' : ''}" x="${p.x - 5}" y="${p.z - 5}" width="10" height="10"/>`;
+        })
+        .join('') +
+      '<g class="mine-you"><circle class="you" r="2"/><path class="you" d="M0-5 2-2 -2-2Z"/></g>';
+    this.get('.map-content').prepend(map);
     const options = { signal: this.abort.signal };
     this.element
       .querySelectorAll<HTMLButtonElement>('[data-action="enter"], [data-action="resume"]')
@@ -127,7 +141,7 @@ export class UIManager {
 
   private setState(state: GameState): void {
     this.state = state;
-    this.overlay.hidden = state === 'playing' || state === 'inventory';
+    this.overlay.hidden = state === 'playing' || state === 'inventory' || state === 'smelting';
     this.hud.hidden = state !== 'playing';
     this.get('.title-layout').hidden = state !== 'ready';
     this.get('.pause-layout').hidden = state !== 'paused';
@@ -160,7 +174,9 @@ export class UIManager {
     this.get('.fixture-tooltip h3').textContent = fixture.name;
     this.get('.fixture-tooltip p').textContent = fixture.description;
     this.get('.fixture-tooltip small').textContent =
-      `설비 배치 완료 · 기능은 Phase ${fixture.phase}에서 연결됩니다`;
+      fixture.kind === 'furnace'
+        ? 'E · 용광로 열기 / 광석 제련'
+        : `설비 배치 완료 · 기능은 Phase ${fixture.phase}에서 연결됩니다`;
   }
 
   toggleMap(): void {
@@ -169,6 +185,20 @@ export class UIManager {
   }
 
   update(position: Vec3, yaw: number): void {
+    const underground = position.z < -42;
+    this.get('.world-map').style.display = underground ? 'none' : 'block';
+    const map = this.element.querySelector<SVGElement>('.underground-map')!;
+    map.style.display = underground ? 'block' : 'none';
+    map.setAttribute('viewBox', `${position.x - 40} ${position.z - 50} 80 100`);
+    map
+      .querySelector('.mine-you')!
+      .setAttribute(
+        'transform',
+        `translate(${position.x} ${position.z}) rotate(${(-yaw * 180) / Math.PI})`,
+      );
+    this.get('.map-content p').textContent = underground
+      ? '주변 통로 지도 · 북쪽 ↑'
+      : '북쪽 ↑ · 점은 현재 위치';
     this.playerMarker.setAttribute(
       'transform',
       `translate(${position.x} ${Math.max(-39, position.z)}) rotate(${(-yaw * 180) / Math.PI})`,

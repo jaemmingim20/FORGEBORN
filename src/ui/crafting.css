@@ -1,0 +1,152 @@
+.crafting-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  background: #08140fea;
+  color: #e9e1c9;
+  pointer-events: auto;
+  padding: 20px;
+}
+.crafting-panel[hidden] {
+  display: none;
+}
+.craft-card {
+  width: min(1000px, 95vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: #17271f;
+  border: 1px solid #ad915c;
+  padding: 26px;
+}
+.craft-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.craft-card h2 {
+  font: 28px var(--serif);
+  margin: 8px 0;
+}
+.craft-card h3 {
+  font: 18px var(--serif);
+  color: #dabb7e;
+}
+.craft-card p,
+.craft-card label,
+.craft-card footer {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.craft-card small {
+  letter-spacing: 2px;
+  color: #c6a76c;
+}
+.craft-columns {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+}
+.craft-card label {
+  display: block;
+  margin: 12px 0;
+}
+.craft-card select,
+.craft-card input {
+  background: #0e1b15;
+  color: #e9e1c9;
+  border: 1px solid #927e52;
+  padding: 8px;
+  margin-left: 12px;
+  max-width: 220px;
+}
+.craft-card input {
+  width: 65px;
+}
+.craft-metals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.craft-collection {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-height: 180px;
+  overflow: auto;
+}
+.craft-card button {
+  cursor: pointer;
+  padding: 10px;
+  background: #c3a66e;
+  color: #18251c;
+  border: 1px solid #e4cc94;
+}
+.craft-anvil {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 210px;
+  background: linear-gradient(120deg, #382c23, #a64d21, #f7a74f, #6b3721) !important;
+  overflow: hidden;
+}
+.craft-anvil span {
+  position: absolute;
+  pointer-events: none;
+  width: 38px;
+  height: 38px;
+  transform: translate(-50%, -50%);
+  border: 3px solid #fff1ba;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #ffca54;
+  background: #ffe1a755;
+}
+.craft-meter {
+  height: 28px;
+  background: #09140f;
+  position: relative;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.craft-meter i {
+  position: absolute;
+  left: 65%;
+  width: 15%;
+  height: 100%;
+  background: #b3954c;
+}
+.craft-meter b {
+  position: absolute;
+  inset: 5px auto 5px 0;
+  width: 0;
+  background: #e99239aa;
+}
+.craft-meter.quench i {
+  left: 45%;
+  width: 25%;
+}
+.craft-meter.quench b {
+  background: #68bfe1aa;
+}
+.weapon-preview {
+  height: 300px;
+  background: radial-gradient(#536055, #101d16);
+  display: grid;
+  place-items: center;
+}
+.craft-card footer {
+  margin-top: 22px;
+  color: #acae94;
+}
+@media (max-width: 720px) {
+  .craft-columns {
+    grid-template-columns: 1fr;
+  }
+  .craft-metals {
+    grid-template-columns: 1fr;
+  }
+  .craft-card {
+    padding: 16px;
+  }
+}

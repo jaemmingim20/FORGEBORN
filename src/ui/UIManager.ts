@@ -30,7 +30,7 @@ export class UIManager {
     this.element.id = 'game-ui';
     this.element.innerHTML = `
       <div class="screen-grain" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
-      <header class="masthead"><div class="brand">${ANVIL}<span>FORGEBORN<small>A BLACKSMITH'S TALE</small></span></div><div class="phase-badge"><i></i> PHASE 03 <span>불꽃과 제련</span></div></header>
+      <header class="masthead"><div class="brand">${ANVIL}<span>FORGEBORN<small>A BLACKSMITH'S TALE</small></span></div><div class="phase-badge"><i></i> PHASE 04 <span>무기 제작</span></div></header>
       <section class="menu-overlay" aria-label="게임 메뉴">
         <div class="title-layout">
           <div class="chapter"><span>CHAPTER III</span><b></b> FIRE INTO METAL</div>
@@ -141,7 +141,8 @@ export class UIManager {
 
   private setState(state: GameState): void {
     this.state = state;
-    this.overlay.hidden = state === 'playing' || state === 'inventory' || state === 'smelting';
+    this.overlay.hidden =
+      state === 'playing' || state === 'inventory' || state === 'smelting' || state === 'crafting';
     this.hud.hidden = state !== 'playing';
     this.get('.title-layout').hidden = state !== 'ready';
     this.get('.pause-layout').hidden = state !== 'paused';
@@ -173,10 +174,15 @@ export class UIManager {
     if (!fixture) return;
     this.get('.fixture-tooltip h3').textContent = fixture.name;
     this.get('.fixture-tooltip p').textContent = fixture.description;
-    this.get('.fixture-tooltip small').textContent =
-      fixture.kind === 'furnace'
-        ? 'E · 용광로 열기 / 광석 제련'
-        : `설비 배치 완료 · 기능은 Phase ${fixture.phase}에서 연결됩니다`;
+    this.get('.fixture-tooltip small').textContent = [
+      'furnace',
+      'anvil',
+      'quench',
+      'workbench',
+      'rack',
+    ].includes(fixture.kind)
+      ? 'E · 설비 사용 / 제작·제련'
+      : `설비 배치 완료 · 기능은 Phase ${fixture.phase}에서 연결됩니다`;
   }
 
   toggleMap(): void {

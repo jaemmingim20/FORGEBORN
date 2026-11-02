@@ -1,3 +1,5 @@
+import { CraftingManager } from '../crafting/CraftingManager';
+import { CraftingUI } from '../ui/CraftingUI';
 import { SmeltingManager } from '../smelting/SmeltingManager';
 import type { Furnace } from '../smelting/SmeltingManager';
 import type { ItemId } from '../items/data';
@@ -63,6 +65,8 @@ export class GameManager {
   readonly mining = new MiningManager(generateVeins(), this.inventory, this.events);
   readonly smelting = new SmeltingManager(this.inventory, this.events);
   readonly smeltingUI: SmeltingUI;
+  readonly crafting = new CraftingManager(this.inventory);
+  readonly craftingUI: CraftingUI;
   readonly miningView: MiningView;
   readonly miningUI: MiningUI;
   private state: GameState = 'ready';
@@ -111,7 +115,16 @@ export class GameManager {
         equip: () => this.inventory.toggleEquip(),
         attack: () => this.miningView.swing(this.elapsed),
         interact: () => {
-          if (this.state === 'playing' && this.world.target?.kind === 'furnace') {
+          const kind = this.world.target?.kind;
+          if (this.state !== 'playing' || !kind) return;
+          if (
+            ['workbench', 'anvil', 'quench', 'rack'].includes(kind) ||
+            (kind === 'furnace' && this.crafting.job?.stage === 'heating')
+          ) {
+            this.setState('crafting');
+            this.craftingUI.open(kind);
+            document.exitPointerLock();
+          } else if (kind === 'furnace') {
             this.setState('smelting');
             document.exitPointerLock();
           }
@@ -149,6 +162,17 @@ export class GameManager {
     this.smeltingUI = new SmeltingUI(container, this.smelting, this.events, () =>
       this.toggleInventory(),
     );
+    this.craftingUI = new CraftingUI(container, this.crafting, () => this.toggleInventory());
+    this.events.on('stateChanged', (state) => {
+      if (state !== 'crafting') this.craftingUI.hide();
+    });
+    const collectionButton = document.createElement('button');
+    collectionButton.textContent = '완성 장비 · 3D 제작 기록 보기';
+    collectionButton.addEventListener('click', () => {
+      this.setState('crafting');
+      this.craftingUI.open('rack');
+    });
+    this.miningUI.element.querySelector('.inventory-card')?.append(collectionButton);
     this.inventory.notify();
     this.player.headBob = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     const checkbox = this.ui.element.querySelector<HTMLInputElement>('#head-bob');
@@ -176,7 +200,7 @@ export class GameManager {
       document.exitPointerLock();
       return true;
     }
-    if (this.state === 'inventory' || this.state === 'smelting') {
+    if (this.state === 'inventory' || this.state === 'smelting' || this.state === 'crafting') {
       void this.input.requestLock();
       return true;
     }
@@ -235,9 +259,15 @@ export class GameManager {
       }
       if (this.state !== 'playing')
         this.miningView.update(0, this.elapsed, this.motor.collider, false);
-      if (this.state === 'playing' || this.state === 'inventory' || this.state === 'smelting')
+      if (
+        this.state === 'playing' ||
+        this.state === 'inventory' ||
+        this.state === 'smelting' ||
+        this.state === 'crafting'
+      )
         this.smelting.update(dt);
       this.smeltingUI.update(dt);
+      this.craftingUI.update(this.state === 'crafting' ? dt : 0);
       this.scene.render();
       this.animationFrame = requestAnimationFrame(this.frame);
     } catch (error) {
@@ -291,6 +321,7 @@ export class GameManager {
     this.input.dispose();
     this.ui.dispose();
     this.smeltingUI.dispose();
+    this.craftingUI.dispose();
     this.miningUI.dispose();
     this.miningView.dispose();
     this.motor.dispose();

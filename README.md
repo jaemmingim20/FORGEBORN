@@ -1,8 +1,8 @@
-# FORGEBORN — Phase 3 그래픽 업데이트 (0.3.1)
+# FORGEBORN — Phase 4 무기 제작 (0.4.0)
 
-[VS Code용 프로젝트 ZIP 다운로드](https://github.com/jaemmingim20/FORGEBORN/raw/refs/heads/main/releases/FORGEBORN-phase3-graphics.zip) · [로컬 실행 안내](START_HERE_KO.md)
+[VS Code용 프로젝트 ZIP 다운로드](https://github.com/jaemmingim20/FORGEBORN/raw/refs/heads/main/releases/FORGEBORN-phase4.zip) · [로컬 실행 안내](START_HERE_KO.md)
 
-중세 판타지 대장장이 시뮬레이터의 **Phase 3 — 제련과 광산 확장**입니다. 기존 이동·채굴·인벤토리를 유지하고, E 용광로 상호작용과 제련, 더 큰 분기형 광산을 추가했습니다. 공식 규칙은 [GDD.md](GDD.md), 제련 구현/제한은 [Phase 3 보고서](docs/PHASE3.md), 0.3.1 그래픽 변경과 검사 범위는 [그래픽 업데이트](docs/GRAPHICS.md)에 기록했습니다. 무기 제작·경제·전투·영구 저장은 이후 단계입니다.
+중세 판타지 대장장이 시뮬레이터의 **Phase 3 — 제련과 광산 확장**입니다. 기존 이동·채굴·인벤토리를 유지하고, E 용광로 상호작용과 제련, 더 큰 분기형 광산을 추가했습니다. 공식 규칙은 [GDD.md](GDD.md), 제련 구현/제한은 [Phase 3 보고서](docs/PHASE3.md), 0.3.1 그래픽 변경과 검사 범위는 [그래픽 업데이트](docs/GRAPHICS.md)에 기록했습니다. Phase 4에서 다섯 종류의 무기 제작·가열·모루 미니게임·담금질·부품 구매·3D 조립을 추가했습니다. [Phase 4 실행 안내](docs/PHASE4.md)를 참고하세요. 손님·판매·전투·영구 저장은 이후 단계입니다.
 
 [Phase 1 완료 보고서](docs/PHASE1.md)는 초기 구현 기록입니다. 이번 버전은 Phase 3 게임 규칙을 유지하면서 동굴·외관·재질·도구의 시각 표현과 나무 배치 문제를 개선합니다.
 
@@ -59,7 +59,7 @@ npm run dev
 - **중세 대장간 외관:** 겹치는 지붕 타일, 박공 목조 골조, 석재 기단, 작은 지붕창, 창문 테두리와 굴뚝 연기를 추가합니다. 주변 숲과 먼 배경 건물의 실루엣도 개선합니다.
 - **재질과 소품:** 목재 결, 암석 균열, 회벽·슬레이트·흙의 표면 요철/거칠기, 풍화된 금속을 절차적 PBR 재질로 표현합니다. 곡괭이는 휘어진 단조 머리·가죽 감은 나무 자루로, 방패 표적은 판재·철 테두리·보스·리벳으로 다듬습니다. 모루와 작업대·보관함에도 형상과 체결 디테일을 추가합니다.
 
-이 업데이트는 시각 표현과 식생 배치 수정입니다. **채굴·제련·인벤토리·이동 규칙은 Phase 3 상태를 유지하며 무기 제작이나 전투는 추가하지 않습니다.**
+이 업데이트는 시각 표현과 식생 배치 수정입니다. 이전 그래픽 업데이트의 기록입니다. 최신 Phase 4에는 아래 제작 흐름이 추가되었습니다.
 
 ## Phase 3 제련
 
@@ -99,8 +99,14 @@ npm run test:browser
 
 ## 구조와 확장
 
-[구현 전 구조 설계](docs/ARCHITECTURE.md)에 파일 구조, 모듈 경계, 좌표와 기본값을 기록했습니다. `src/world/data.ts`는 구역/설비의 데이터이며, `ModelFactory`는 설비 외형, `WorldBuilder`는 배치와 충돌체, `WorldManager`는 구역/시선 판별을 담당합니다. 게임 규칙은 렌더러에 두지 않습니다. 다음 개발은 **Phase 4 무기 제작 시스템**입니다. 채굴 규칙과 인벤토리는 렌더러와 분리된 `MiningManager`, `InventoryManager`에 둡니다.
+[구현 전 구조 설계](docs/ARCHITECTURE.md)에 파일 구조, 모듈 경계, 좌표와 기본값을 기록했습니다. `src/world/data.ts`는 구역/설비의 데이터이며, `ModelFactory`는 설비 외형, `WorldBuilder`는 배치와 충돌체, `WorldManager`는 구역/시선 판별을 담당합니다. 게임 규칙은 렌더러에 두지 않습니다. 최신 제작 시스템은 `CraftingManager`와 `CraftingUI`, `WeaponModel`에 있으며 다음 개발은 **Phase 5 손님 및 경제**입니다. 채굴 규칙과 인벤토리는 렌더러와 분리된 `MiningManager`, `InventoryManager`에 둡니다.
 
 Rapier 호환 패키지는 WASM을 포함하므로 물리 청크가 비교적 큽니다. 첫 로드는 네트워크/기기에 따라 오래 걸릴 수 있으며 로딩 화면을 제공합니다. 모델과 재질은 교체 가능한 절차적 생성 방식입니다. 실제 GPU별 성능 최적화와 사운드는 후속 개선 대상입니다. 참고 이미지의 분위기·재질·형상을 디자인 방향으로 사용했고, 워터마크가 있는 이미지 자체를 게임 텍스처나 모델로 포함하지 않았습니다.
 
 관련 핵심 검사는 `npm run typecheck`, `npm test -- tests/cave-geometry.test.ts tests/vegetation.test.ts`, `npm run build`입니다. 채굴·제련 동작 확인에는 `npm run test:phase3`를 사용할 수 있습니다. 이번 그래픽 작업의 검사 범위와 결과 기록은 [GRAPHICS.md](docs/GRAPHICS.md)를 따릅니다.
+
+## Phase 4 제작하기
+
+조립 작업대 E에서 장비와 금속 수량을 선택한 뒤 **용광로 E → 모루 E → 담금질 수조 E → 조립 작업대 E** 순서로 진행하세요. 완성품은 보관대 E 또는 Tab 인벤토리의 제작 기록 버튼에서 3D로 확인합니다. 기본형 부품은 무료이며 초기 자금은 200동화입니다. 자세한 조작과 범위는 [Phase 4 안내](docs/PHASE4.md)에 있습니다.
+
+이번 Phase 4는 요청에 따라 테스트·타입 검사·브라우저 점검을 생략하고 배포 빌드만 생성했습니다. 이전 보고서의 검사 결과는 이전 버전에 대한 기록입니다.

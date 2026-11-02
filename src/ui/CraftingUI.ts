@@ -6,6 +6,7 @@ import { ITEMS } from '../items/data';
 import { weaponModel } from '../crafting/WeaponModel';
 import './crafting.css';
 export class CraftingUI {
+  onManage?: () => void;
   readonly element = document.createElement('section');
   private station = 'workbench';
   private opened = false;
@@ -160,6 +161,11 @@ export class CraftingUI {
             )}</p><p>${w.parts.map((p, i) => `${WEAPONS[w.kind].parts[i]}: ${TIERS[p]!.name}`).join(' / ')}</p>`
         : '<p>완성한 장비의 3D 외형과 성능이 여기에 표시됩니다.</p>'
     }</aside></div><footer>제작 기록은 현재 세션에 유지됩니다. 판매·전투는 다음 페이즈입니다.</footer></div>`;
+    const management = document.createElement('button');
+    management.className = 'management-link';
+    management.textContent = '장비 장착 · 분해 관리';
+    management.onclick = () => this.onManage?.();
+    this.element.querySelector('.craft-card')?.append(management);
     if (!this.renderer) {
       this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));

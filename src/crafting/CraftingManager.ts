@@ -51,11 +51,33 @@ export interface CraftedWeapon {
 }
 export class CraftingManager {
   coins = 200;
+  onFinished?: (cost: number) => void;
   job: CraftJob | null = null;
   readonly weapons: CraftedWeapon[] = [];
   selected: CraftedWeapon | null = null;
   private serial = 0;
   constructor(readonly inventory: InventoryManager) {}
+  restore(weapons: CraftedWeapon[], job: CraftJob | null, coins: number): void {
+    if (
+      weapons.length > 20 ||
+      weapons.some(
+        (w) =>
+          !WEAPONS[w.kind] ||
+          !Number.isInteger(w.id) ||
+          !Number.isFinite(w.value) ||
+          !Array.isArray(w.parts) ||
+          w.parts.length !== 3 ||
+          w.parts.some((p) => !TIERS[p]) ||
+          METALS.some((m) => !Number.isInteger(w.metals[m]) || w.metals[m] < 0),
+      )
+    )
+      throw new Error('Invalid equipment');
+    this.weapons.splice(0, this.weapons.length, ...weapons);
+    this.serial = Math.max(0, ...weapons.map((w) => w.id));
+    this.job = job;
+    this.coins = Math.max(0, Math.floor(coins));
+    this.selected = weapons.at(-1) ?? null;
+  }
   start(kind: WeaponKind, metals: Record<MaterialId, number>): string {
     if (this.job) return '진행 중인 제작을 먼저 완성하세요.';
     if (!WEAPONS[kind] || METALS.some((m) => !Number.isInteger(metals[m]) || metals[m] < 0))
@@ -137,6 +159,7 @@ export class CraftingManager {
       value: METALS.reduce((n, m, i) => n + j.metals[m] * METAL_STATS[i]!.value, 0) + cost,
     };
     this.coins -= cost;
+    this.onFinished?.(cost);
     this.weapons.push(w);
     this.selected = w;
     this.job = null;

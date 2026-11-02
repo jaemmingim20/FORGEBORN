@@ -1,7 +1,14 @@
 import type { InventorySnapshot } from '../inventory/InventoryManager';
 export type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 export type ZoneId = 'counter' | 'forge' | 'yard' | 'training' | 'mine';
-export type GameState = 'ready' | 'playing' | 'paused' | 'inventory' | 'smelting' | 'crafting';
+export type GameState =
+  | 'ready'
+  | 'playing'
+  | 'paused'
+  | 'inventory'
+  | 'smelting'
+  | 'crafting'
+  | 'campaign';
 
 export interface Bounds {
   minX: number;

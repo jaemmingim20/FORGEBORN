@@ -68,6 +68,27 @@ export class SmeltingManager {
   ) {
     this.register('furnace-01', 1);
   }
+  restore(furnaces: Furnace[]): void {
+    if (
+      !furnaces.length ||
+      furnaces.length > 4 ||
+      furnaces.some(
+        (f) =>
+          !FURNACE_LEVELS[f.level] ||
+          !Array.isArray(f.jobs) ||
+          f.jobs.some(
+            (j) =>
+              !RECIPES.some((r) => r.id === j.recipeId) ||
+              !Number.isFinite(j.remaining) ||
+              j.remaining < 0,
+          ),
+      )
+    )
+      throw new Error('Invalid furnace');
+    this.furnaces.clear();
+    for (const f of furnaces) this.furnaces.set(f.id, f);
+    this.serial = Math.max(0, ...furnaces.flatMap((f) => f.jobs.map((j) => j.id)));
+  }
   register(id: string, level: number): void {
     if (this.furnaces.has(id)) throw new Error('이미 등록된 용광로입니다.');
     if (!FURNACE_LEVELS[level]) throw new Error('지원하지 않는 용광로 레벨입니다.');

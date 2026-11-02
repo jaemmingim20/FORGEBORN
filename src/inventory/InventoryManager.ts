@@ -1,4 +1,5 @@
 import { EventBus } from '../core/EventBus';
+import { ITEMS } from '../items/data';
 import type { ItemId } from '../items/data';
 
 export interface InventorySlot {
@@ -88,6 +89,18 @@ export class InventoryManager {
     this.slots.splice(0, this.slots.length, ...planned);
     this.notify();
     return true;
+  }
+  restore(data: InventorySnapshot): void {
+    if (!Array.isArray(data.slots) || data.slots.length > this.capacity)
+      throw new Error('Invalid inventory');
+    const next = data.slots.map((s) => {
+      if (!(s.item in ITEMS) || !Number.isInteger(s.quantity) || s.quantity < 1 || s.quantity > 99)
+        throw new Error('Invalid slot');
+      return { ...s };
+    });
+    this.slots.splice(0, this.slots.length, ...next);
+    this.equipped = !!data.equipped;
+    this.notify();
   }
   toggleEquip(): void {
     this.equipped = !this.equipped;

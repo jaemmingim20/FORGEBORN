@@ -110,6 +110,19 @@ export class MiningView {
     this.chips.visible = false;
   }
 
+  syncVeins(): void {
+    for (const [id, visual] of this.visuals) {
+      const vein = this.manager.veins.get(id)!;
+      if (vein.depleted && visual.collider.isValid()) this.physics.removeCollider(visual.collider);
+      if (!vein.depleted && !visual.collider.isValid())
+        visual.collider = this.physics.addBox({
+          center: vein.position,
+          size: { x: 1.05, y: 1, z: 1.2 },
+          fixtureId: id,
+        });
+      visual.group.visible = !vein.depleted;
+    }
+  }
   swing(now: number): void {
     if (now < this.nextSwing || this.attackTime >= 0) return;
     if (!this.manager.inventory.equipped) {

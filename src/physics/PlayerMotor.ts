@@ -22,6 +22,7 @@ export class PlayerMotor {
   private jumpBuffer = 0;
   grounded = false;
   moving = false;
+  canSprint = true;
 
   constructor(
     private readonly physics: PhysicsWorld,
@@ -60,7 +61,7 @@ export class PlayerMotor {
     const length = Math.hypot(intent.forward, intent.right);
     const forward = intent.forward / Math.max(1, length);
     const right = intent.right / Math.max(1, length);
-    const distance = (intent.sprint ? PLAYER.runSpeed : PLAYER.walkSpeed) * dt;
+    const distance = (intent.sprint && this.canSprint ? PLAYER.runSpeed : PLAYER.walkSpeed) * dt;
     const movement = {
       x: (-Math.sin(intent.yaw) * forward + Math.cos(intent.yaw) * right) * distance,
       y: this.velocityY * dt,

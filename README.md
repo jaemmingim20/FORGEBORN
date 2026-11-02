@@ -1,6 +1,6 @@
-# FORGEBORN — Phase 4 무기 제작 (0.4.0)
+# FORGEBORN — Phase 9 통합 빌드 (0.9.0)
 
-[VS Code용 프로젝트 ZIP 다운로드](https://github.com/jaemmingim20/FORGEBORN/raw/refs/heads/main/releases/FORGEBORN-phase4.zip) · [로컬 실행 안내](START_HERE_KO.md)
+[VS Code용 프로젝트 ZIP 다운로드](https://github.com/jaemmingim20/FORGEBORN/raw/refs/heads/main/releases/FORGEBORN-phase9.zip) · [로컬 실행 안내](START_HERE_KO.md)
 
 중세 판타지 대장장이 시뮬레이터의 **Phase 3 — 제련과 광산 확장**입니다. 기존 이동·채굴·인벤토리를 유지하고, E 용광로 상호작용과 제련, 더 큰 분기형 광산을 추가했습니다. 공식 규칙은 [GDD.md](GDD.md), 제련 구현/제한은 [Phase 3 보고서](docs/PHASE3.md), 0.3.1 그래픽 변경과 검사 범위는 [그래픽 업데이트](docs/GRAPHICS.md)에 기록했습니다. Phase 4에서 다섯 종류의 무기 제작·가열·모루 미니게임·담금질·부품 구매·3D 조립을 추가했습니다. [Phase 4 실행 안내](docs/PHASE4.md)를 참고하세요. 손님·판매·전투·영구 저장은 이후 단계입니다.
 
@@ -110,3 +110,9 @@ Rapier 호환 패키지는 WASM을 포함하므로 물리 청크가 비교적 �
 조립 작업대 E에서 장비와 금속 수량을 선택한 뒤 **용광로 E → 모루 E → 담금질 수조 E → 조립 작업대 E** 순서로 진행하세요. 완성품은 보관대 E 또는 Tab 인벤토리의 제작 기록 버튼에서 3D로 확인합니다. 기본형 부품은 무료이며 초기 자금은 200동화입니다. 자세한 조작과 범위는 [Phase 4 안내](docs/PHASE4.md)에 있습니다.
 
 이번 Phase 4는 요청에 따라 테스트·타입 검사·브라우저 점검을 생략하고 배포 빌드만 생성했습니다. 이전 보고서의 검사 결과는 이전 버전에 대한 기록입니다.
+
+## 최신 Phase 5–9 통합
+
+손님 주문·판매·시장·분해, 제작 장비 장착·공격·방어, 광산 몬스터, 용광로 성장·날짜·정산·저장, 구획별 광산 표시를 추가했습니다. 최신 기능·조작·제한은 [Phase 5–9 안내](docs/PHASE5-9.md)를 참고하세요. 위의 이전 페이즈 설명과 보고서는 각 단계 당시 기록입니다.
+
+카운터 E 주문 / 침대 E 다음 날 / 1 주 무기 / 2 방패 해제 / 3 채굴 / 우클릭 방어 / M 시장 / J 기록·저장. 요청에 따라 이번 버전은 테스트·타입 검사·실행 점검 없이 Vite 빌드만 생성한 미검증 빌드입니다. GPU 성능을 확인했다는 뜻은 아닙니다.

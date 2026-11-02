@@ -11,6 +11,9 @@ export type StrikeResult = 'hit' | 'collected' | 'full' | 'tool' | 'cooldown' | 
 export class MiningManager {
   readonly veins: Map<string, VeinState>;
   private nextHit = 0;
+  toolTier = 0;
+  onHit?: () => void;
+  onCollected?: (quantity: number) => void;
   constructor(
     veins: readonly Vein[],
     readonly inventory: InventoryManager,
@@ -25,8 +28,9 @@ export class MiningManager {
     if (!vein || vein.depleted) return 'empty';
     if (now < this.nextHit) return 'cooldown';
     this.nextHit = now + 0.65;
-    if (!this.inventory.equipped || ORES[vein.ore].tier > 0) return 'tool';
+    if (!this.inventory.equipped || ORES[vein.ore].tier > this.toolTier) return 'tool';
     if (vein.remaining === 1 && !this.inventory.canAdd(vein.ore, vein.quantity)) return 'full';
+    this.onHit?.();
     vein.remaining--;
     if (vein.remaining > 0) return 'hit';
     // Mark consumed before publishing inventory events, preventing re-entrant duplicate collection.
@@ -36,6 +40,7 @@ export class MiningManager {
       vein.remaining = 1;
       return 'full';
     }
+    this.onCollected?.(vein.quantity);
     this.events?.emit('miningFeedback', `${ORES[vein.ore].name} +${vein.quantity}`);
     return 'collected';
   }

@@ -81,6 +81,16 @@ export class WorldManager {
       this.target = fixture;
       this.events.emit('targetChanged', fixture);
     }
+    for (const chunk of this.root.children)
+      if (chunk.name === 'mine-chunk') {
+        const c = chunk.userData.center as Vec3;
+        const active = Math.hypot(c.x - position.x, c.z - position.z) < 70;
+        if (!active && chunk.visible)
+          chunk.traverse((o) => {
+            if (o instanceof THREE.Mesh) o.geometry.dispose();
+          });
+        chunk.visible = active;
+      }
     this.animate(time);
   }
 
@@ -108,6 +118,7 @@ export class WorldManager {
         object.geometry.dispose();
         if (
           object.userData.unbatched &&
+          object.name !== 'static-batch' &&
           !Array.isArray(object.material) &&
           object.material instanceof THREE.MeshStandardMaterial &&
           object.material.map

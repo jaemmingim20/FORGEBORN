@@ -1,0 +1,22 @@
+/* Modern PC browsers support WOFF2. Ship one format per face, including in the portable build. */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource/noto-sans-kr/files/noto-sans-kr-korean-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('@fontsource/noto-sans-kr/files/noto-sans-kr-korean-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Serif KR';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource/noto-serif-kr/files/noto-serif-kr-korean-400-normal.woff2') format('woff2');
+}
